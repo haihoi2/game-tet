@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>TeT Horse 2026</title>
+<style>
+  body {
+    background: #111;
+    color: #eee;
+    font-family: monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #controls {
+    margin: 12px;
+  }
+
+  #canvas {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 8px);
+    gap: 1px;
+    background: #000;
+    padding: 6px;
+  }
+
+  .pixel {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+
+  .ascii {
+    font-size: 8px;
+    line-height: 8px;
+    width: 8px;
+    height: 8px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<h3>Pixel Horse Renderer (X / O Matrix)</h3>
+
+<div id="controls">
+  <button onclick="mode='color'; render()">Color Dots</button>
+  <button onclick="mode='ascii'; render()">X / O</button>
+</div>
+
+<div id="canvas"></div>
+
+<img id="source" src="BF052863-CFDE-415B-980A-8BB4C1D10552.jpeg" hidden />
+
+<script>
+const img = document.getElementById("source");
+const canvasDiv = document.getElementById("canvas");
+
+const pixelSize = 2;        // sampling resolution
+const threshold = 120;      // brightness threshold
+let mode = "color";
+
+function render() {
+  const w = Math.floor(img.width / pixelSize);
+  const h = Math.floor(img.height / pixelSize);
+
+  canvasDiv.style.setProperty("--cols", w);
+  canvasDiv.innerHTML = "";
+
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d");
+
+  c.width = w;
+  c.height = h;
+
+  ctx.drawImage(img, 0, 0, w, h);
+  const data = ctx.getImageData(0, 0, w, h).data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    const a = data[i + 3];
+
+    const brightness = (r + g + b) / 3;
+
+    if (mode === "color") {
+      const d = document.createElement("div");
+      d.className = "pixel";
+      d.style.background = `rgba(${r},${g},${b},${a/255})`;
+      canvasDiv.appendChild(d);
+    } else {
+      const span = document.createElement("span");
+      span.className = "ascii";
+      span.textContent = brightness < threshold ? "X" : "O";
+      span.style.color = brightness < threshold ? "#fff" : "#444";
+      canvasDiv.appendChild(span);
+    }
+  }
+}
+
+img.onload = render;
+</script>
+
+</body>
+</html>
